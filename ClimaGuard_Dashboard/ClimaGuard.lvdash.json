@@ -1,0 +1,660 @@
+{
+  "datasets" : [ {
+    "name" : "34ca2825",
+    "displayName" : "Average values by temprature",
+    "query" : "-- 1. Average values by weather type (latest 10 days)\r\nSELECT \r\n  'Air Temperature (°C)' AS Metric, ROUND(AVG(value), 2) AS Avg_Value \r\nFROM climaguard.singapore.air_temperature\r\n\r\n"
+  }, {
+    "name" : "469fb1f8",
+    "displayName" : "Top 5 hottest locations",
+    "query" : "-- 2. Top 5 hottest locations by average temperature\r\nSELECT name as location ,latitude,longitude, ROUND(AVG(value), 2) AS avg_temp\r\nFROM climaguard.singapore.air_temperature\r\nWHERE to_date(timestamp) >= date_sub(current_date(), 9)\r\nAND to_date(timestamp) <= current_date()\r\nGROUP BY latitude,longitude,name\r\nORDER BY avg_temp DESC\r\nLIMIT 5;\r\n"
+  }, {
+    "name" : "8c7f0707",
+    "displayName" : "Flood Risk Assessment",
+    "query" : "WITH joined_data AS (\r\n  SELECT \r\n    to_date(a.timestamp) AS date,\r\n    a.name AS location,\r\n    ROUND(AVG(a.value), 2) AS avg_temp,\r\n    ROUND(AVG(h.value), 2) AS avg_humidity,\r\n    ROUND(SUM(r.value), 2) AS total_rainfall,\r\n    ROUND(AVG(w.value), 2) AS avg_wind_speed\r\n  FROM climaguard.singapore.air_temperature a\r\n  JOIN climaguard.singapore.relative_humidity h \r\n    ON a.timestamp = h.timestamp AND a.deviceId = h.deviceId\r\n  JOIN climaguard.singapore.rainfall r \r\n    ON a.timestamp = r.timestamp AND a.deviceId = r.deviceId\r\n  JOIN climaguard.singapore.wind_speed w \r\n    ON a.timestamp = w.timestamp AND a.deviceId = w.deviceId\r\n  GROUP BY to_date(a.timestamp), a.name\r\n)\r\n\r\nSELECT *,\r\n  CASE \r\n    WHEN total_rainfall > 20 AND avg_humidity > 85 \r\n         AND avg_wind_speed > 15 AND avg_temp < 28 \r\n    THEN 'High Risk'\r\n    WHEN total_rainfall > 10 AND avg_humidity > 75 \r\n         AND avg_wind_speed > 10 \r\n    THEN 'Moderate Risk'\r\n    ELSE 'Low Risk'\r\n  END AS rain_flood_risk\r\nFROM joined_data\r\nORDER BY date, location;\r\n"
+  }, {
+    "name" : "bfee8bb8",
+    "displayName" : "Overall_Data_with_predicted_temp",
+    "query" : "SELECT *\r\nFROM climaguard.singapore.climate_heat_risk\r\nWHERE date >= date_sub(current_date(), 9)\r\n  AND date <= current_date()\r\nORDER BY date DESC;\r\n"
+  }, {
+    "name" : "b415241b",
+    "displayName" : "Average values by temprature",
+    "query" : "\r\nSELECT 'Rainfall (mm)', ROUND(AVG(value), 2) FROM climaguard.singapore.rainfall\r\nUNION ALL\r\nSELECT 'Relative Humidity (%)', ROUND(AVG(value), 2) FROM climaguard.singapore.relative_humidity\r\nUNION ALL\r\nSELECT 'Wind Direction (°)', ROUND(AVG(value), 2) FROM climaguard.singapore.wind_direction\r\nUNION ALL\r\nSELECT 'Wind Speed (knots)', ROUND(AVG(value), 2) FROM climaguard.singapore.wind_speed;"
+  }, {
+    "name" : "ce97f102",
+    "displayName" : "Untitled dataset",
+    "query" : "select date(timestamp) from climaguard.singapore.air_temperature"
+  } ],
+  "pages" : [ {
+    "name" : "d1e08d5a",
+    "displayName" : "Executive Summary",
+    "layout" : [ {
+      "widget" : {
+        "name" : "b96d27fd",
+        "queries" : [ {
+          "name" : "main_query",
+          "query" : {
+            "datasetName" : "469fb1f8",
+            "fields" : [ {
+              "name" : "avg_temp",
+              "expression" : "`avg_temp`"
+            }, {
+              "name" : "latitude",
+              "expression" : "`latitude`"
+            }, {
+              "name" : "longitude",
+              "expression" : "`longitude`"
+            }, {
+              "name" : "location",
+              "expression" : "`location`"
+            } ],
+            "disaggregated" : true
+          }
+        } ],
+        "spec" : {
+          "version" : 2,
+          "widgetType" : "symbol-map",
+          "encodings" : {
+            "coordinates" : {
+              "latitude" : {
+                "fieldName" : "latitude",
+                "displayName" : "latitude"
+              },
+              "longitude" : {
+                "fieldName" : "longitude",
+                "displayName" : "longitude"
+              }
+            },
+            "color" : {
+              "fieldName" : "avg_temp",
+              "scale" : {
+                "type" : "quantitative",
+                "colorRamp" : {
+                  "mode" : "scheme",
+                  "scheme" : "orangered"
+                }
+              },
+              "displayName" : "avg_temp"
+            },
+            "size" : {
+              "fieldName" : "avg_temp",
+              "scale" : {
+                "type" : "quantitative"
+              },
+              "displayName" : "Temprature ( °C)"
+            },
+            "extra" : [ {
+              "fieldName" : "location",
+              "displayName" : "location"
+            } ]
+          }
+        }
+      },
+      "position" : {
+        "x" : 0,
+        "y" : 23,
+        "width" : 6,
+        "height" : 9
+      }
+    }, {
+      "widget" : {
+        "name" : "2a3d992f",
+        "queries" : [ {
+          "name" : "main_query",
+          "query" : {
+            "datasetName" : "bfee8bb8",
+            "fields" : [ {
+              "name" : "name",
+              "expression" : "`name`"
+            }, {
+              "name" : "date",
+              "expression" : "`date`"
+            }, {
+              "name" : "temperature",
+              "expression" : "`temperature`"
+            }, {
+              "name" : "rainfall",
+              "expression" : "`rainfall`"
+            }, {
+              "name" : "relative_humidity",
+              "expression" : "`relative_humidity`"
+            }, {
+              "name" : "wind_direction",
+              "expression" : "`wind_direction`"
+            }, {
+              "name" : "wind_speed",
+              "expression" : "`wind_speed`"
+            } ],
+            "disaggregated" : true
+          }
+        } ],
+        "spec" : {
+          "version" : 1,
+          "widgetType" : "table",
+          "encodings" : {
+            "columns" : [ {
+              "fieldName" : "name",
+              "booleanValues" : [ "false", "true" ],
+              "imageUrlTemplate" : "{{ @ }}",
+              "imageTitleTemplate" : "{{ @ }}",
+              "imageWidth" : "",
+              "imageHeight" : "",
+              "linkUrlTemplate" : "{{ @ }}",
+              "linkTextTemplate" : "{{ @ }}",
+              "linkTitleTemplate" : "{{ @ }}",
+              "linkOpenInNewTab" : true,
+              "type" : "string",
+              "displayAs" : "string",
+              "visible" : true,
+              "order" : 2,
+              "title" : "name",
+              "allowSearch" : true,
+              "alignContent" : "left",
+              "allowHTML" : false,
+              "highlightLinks" : false,
+              "useMonospaceFont" : false,
+              "preserveWhitespace" : false,
+              "displayName" : "name"
+            }, {
+              "fieldName" : "date",
+              "dateTimeFormat" : "YYYY-MM-DD",
+              "booleanValues" : [ "false", "true" ],
+              "imageUrlTemplate" : "{{ @ }}",
+              "imageTitleTemplate" : "{{ @ }}",
+              "imageWidth" : "",
+              "imageHeight" : "",
+              "linkUrlTemplate" : "{{ @ }}",
+              "linkTextTemplate" : "{{ @ }}",
+              "linkTitleTemplate" : "{{ @ }}",
+              "linkOpenInNewTab" : true,
+              "type" : "date",
+              "displayAs" : "datetime",
+              "visible" : true,
+              "order" : 4,
+              "title" : "date",
+              "allowSearch" : false,
+              "alignContent" : "center",
+              "allowHTML" : false,
+              "highlightLinks" : false,
+              "useMonospaceFont" : false,
+              "preserveWhitespace" : false,
+              "displayName" : "date"
+            }, {
+              "fieldName" : "temperature",
+              "numberFormat" : "0.00",
+              "booleanValues" : [ "false", "true" ],
+              "imageUrlTemplate" : "{{ @ }}",
+              "imageTitleTemplate" : "{{ @ }}",
+              "imageWidth" : "",
+              "imageHeight" : "",
+              "linkUrlTemplate" : "{{ @ }}",
+              "linkTextTemplate" : "{{ @ }}",
+              "linkTitleTemplate" : "{{ @ }}",
+              "linkOpenInNewTab" : true,
+              "type" : "float",
+              "displayAs" : "number",
+              "visible" : true,
+              "order" : 5,
+              "title" : "Temperature (°C)",
+              "allowSearch" : false,
+              "alignContent" : "center",
+              "allowHTML" : false,
+              "highlightLinks" : false,
+              "useMonospaceFont" : false,
+              "preserveWhitespace" : false,
+              "cellFormat" : {
+                "default" : {
+                  "foregroundColor" : null
+                },
+                "rules" : [ {
+                  "if" : {
+                    "column" : "temperature",
+                    "fn" : ">=",
+                    "literal" : "35"
+                  },
+                  "value" : {
+                    "foregroundColor" : {
+                      "themeColorType" : "visualizationColors",
+                      "position" : 4
+                    }
+                  }
+                } ]
+              },
+              "displayName" : "temperature"
+            }, {
+              "fieldName" : "rainfall",
+              "numberFormat" : "0.00",
+              "booleanValues" : [ "false", "true" ],
+              "imageUrlTemplate" : "{{ @ }}",
+              "imageTitleTemplate" : "{{ @ }}",
+              "imageWidth" : "",
+              "imageHeight" : "",
+              "linkUrlTemplate" : "{{ @ }}",
+              "linkTextTemplate" : "{{ @ }}",
+              "linkTitleTemplate" : "{{ @ }}",
+              "linkOpenInNewTab" : true,
+              "type" : "float",
+              "displayAs" : "number",
+              "visible" : true,
+              "order" : 6,
+              "title" : "Rainfall (MM)",
+              "allowSearch" : false,
+              "alignContent" : "center",
+              "allowHTML" : false,
+              "highlightLinks" : false,
+              "useMonospaceFont" : false,
+              "preserveWhitespace" : false,
+              "displayName" : "rainfall"
+            }, {
+              "fieldName" : "relative_humidity",
+              "numberFormat" : "0.00",
+              "booleanValues" : [ "false", "true" ],
+              "imageUrlTemplate" : "{{ @ }}",
+              "imageTitleTemplate" : "{{ @ }}",
+              "imageWidth" : "",
+              "imageHeight" : "",
+              "linkUrlTemplate" : "{{ @ }}",
+              "linkTextTemplate" : "{{ @ }}",
+              "linkTitleTemplate" : "{{ @ }}",
+              "linkOpenInNewTab" : true,
+              "type" : "float",
+              "displayAs" : "number",
+              "visible" : true,
+              "order" : 7,
+              "title" : "Relative Humidity (%)",
+              "allowSearch" : false,
+              "alignContent" : "center",
+              "allowHTML" : false,
+              "highlightLinks" : false,
+              "useMonospaceFont" : false,
+              "preserveWhitespace" : false,
+              "displayName" : "relative_humidity"
+            }, {
+              "fieldName" : "wind_direction",
+              "numberFormat" : "0",
+              "booleanValues" : [ "false", "true" ],
+              "imageUrlTemplate" : "{{ @ }}",
+              "imageTitleTemplate" : "{{ @ }}",
+              "imageWidth" : "",
+              "imageHeight" : "",
+              "linkUrlTemplate" : "{{ @ }}",
+              "linkTextTemplate" : "{{ @ }}",
+              "linkTitleTemplate" : "{{ @ }}",
+              "linkOpenInNewTab" : true,
+              "type" : "integer",
+              "displayAs" : "number",
+              "visible" : true,
+              "order" : 8,
+              "title" : "Eind Direction (degrees)",
+              "allowSearch" : false,
+              "alignContent" : "center",
+              "allowHTML" : false,
+              "highlightLinks" : false,
+              "useMonospaceFont" : false,
+              "preserveWhitespace" : false,
+              "displayName" : "wind_direction"
+            }, {
+              "fieldName" : "wind_speed",
+              "numberFormat" : "0.00",
+              "booleanValues" : [ "false", "true" ],
+              "imageUrlTemplate" : "{{ @ }}",
+              "imageTitleTemplate" : "{{ @ }}",
+              "imageWidth" : "",
+              "imageHeight" : "",
+              "linkUrlTemplate" : "{{ @ }}",
+              "linkTextTemplate" : "{{ @ }}",
+              "linkTitleTemplate" : "{{ @ }}",
+              "linkOpenInNewTab" : true,
+              "type" : "float",
+              "displayAs" : "number",
+              "visible" : true,
+              "order" : 9,
+              "title" : "Wind Speed (knots)",
+              "allowSearch" : false,
+              "alignContent" : "center",
+              "allowHTML" : false,
+              "highlightLinks" : false,
+              "useMonospaceFont" : false,
+              "preserveWhitespace" : false,
+              "displayName" : "wind_speed"
+            } ]
+          },
+          "invisibleColumns" : [ {
+            "booleanValues" : [ "false", "true" ],
+            "imageUrlTemplate" : "{{ @ }}",
+            "imageTitleTemplate" : "{{ @ }}",
+            "imageWidth" : "",
+            "imageHeight" : "",
+            "linkUrlTemplate" : "{{ @ }}",
+            "linkTextTemplate" : "{{ @ }}",
+            "linkTitleTemplate" : "{{ @ }}",
+            "linkOpenInNewTab" : true,
+            "name" : "deviceId",
+            "type" : "string",
+            "displayAs" : "string",
+            "order" : 0,
+            "title" : "deviceId",
+            "allowSearch" : false,
+            "alignContent" : "center",
+            "allowHTML" : false,
+            "highlightLinks" : false,
+            "useMonospaceFont" : false,
+            "preserveWhitespace" : false
+          }, {
+            "numberFormat" : "0.00",
+            "booleanValues" : [ "false", "true" ],
+            "imageUrlTemplate" : "{{ @ }}",
+            "imageTitleTemplate" : "{{ @ }}",
+            "imageWidth" : "",
+            "imageHeight" : "",
+            "linkUrlTemplate" : "{{ @ }}",
+            "linkTextTemplate" : "{{ @ }}",
+            "linkTitleTemplate" : "{{ @ }}",
+            "linkOpenInNewTab" : true,
+            "name" : "latitude",
+            "type" : "float",
+            "displayAs" : "number",
+            "order" : 1,
+            "title" : "latitude",
+            "allowSearch" : false,
+            "alignContent" : "right",
+            "allowHTML" : false,
+            "highlightLinks" : false,
+            "useMonospaceFont" : false,
+            "preserveWhitespace" : false
+          }, {
+            "numberFormat" : "0.00",
+            "booleanValues" : [ "false", "true" ],
+            "imageUrlTemplate" : "{{ @ }}",
+            "imageTitleTemplate" : "{{ @ }}",
+            "imageWidth" : "",
+            "imageHeight" : "",
+            "linkUrlTemplate" : "{{ @ }}",
+            "linkTextTemplate" : "{{ @ }}",
+            "linkTitleTemplate" : "{{ @ }}",
+            "linkOpenInNewTab" : true,
+            "name" : "longitude",
+            "type" : "float",
+            "displayAs" : "number",
+            "order" : 3,
+            "title" : "longitude",
+            "allowSearch" : false,
+            "alignContent" : "right",
+            "allowHTML" : false,
+            "highlightLinks" : false,
+            "useMonospaceFont" : false,
+            "preserveWhitespace" : false
+          }, {
+            "numberFormat" : "0.00",
+            "booleanValues" : [ "false", "true" ],
+            "imageUrlTemplate" : "{{ @ }}",
+            "imageTitleTemplate" : "{{ @ }}",
+            "imageWidth" : "",
+            "imageHeight" : "",
+            "linkUrlTemplate" : "{{ @ }}",
+            "linkTextTemplate" : "{{ @ }}",
+            "linkTitleTemplate" : "{{ @ }}",
+            "linkOpenInNewTab" : true,
+            "name" : "predicted_temp",
+            "type" : "float",
+            "displayAs" : "number",
+            "order" : 10,
+            "title" : "predicted_temp",
+            "allowSearch" : false,
+            "alignContent" : "right",
+            "allowHTML" : false,
+            "highlightLinks" : false,
+            "useMonospaceFont" : false,
+            "preserveWhitespace" : false
+          } ],
+          "allowHTMLByDefault" : false,
+          "itemsPerPage" : 25,
+          "paginationSize" : "default",
+          "condensed" : true,
+          "withRowNumber" : false
+        }
+      },
+      "position" : {
+        "x" : 3,
+        "y" : 13,
+        "width" : 3,
+        "height" : 8
+      }
+    }, {
+      "widget" : {
+        "name" : "50b39e99",
+        "queries" : [ {
+          "name" : "main_query",
+          "query" : {
+            "datasetName" : "bfee8bb8",
+            "fields" : [ {
+              "name" : "date",
+              "expression" : "`date`"
+            }, {
+              "name" : "avg(wind_speed)",
+              "expression" : "AVG(`wind_speed`)"
+            }, {
+              "name" : "percentile(relative_humidity, percentage=0_6)",
+              "expression" : "PERCENTILE(`relative_humidity`, 0.6)"
+            } ],
+            "disaggregated" : false
+          }
+        } ],
+        "spec" : {
+          "version" : 3,
+          "widgetType" : "line",
+          "encodings" : {
+            "x" : {
+              "fieldName" : "date",
+              "scale" : {
+                "type" : "temporal"
+              },
+              "displayName" : "date"
+            },
+            "y" : {
+              "scale" : {
+                "type" : "quantitative"
+              },
+              "fields" : [ {
+                "fieldName" : "avg(wind_speed)",
+                "displayName" : "Average Speed in knots"
+              }, {
+                "fieldName" : "percentile(relative_humidity, percentage=0_6)",
+                "displayName" : "Humidity in (%)"
+              } ]
+            },
+            "label" : {
+              "show" : true
+            }
+          },
+          "frame" : {
+            "showTitle" : false,
+            "title" : "Wind Speed (knots) bvs Humidity (%)",
+            "showDescription" : false,
+            "description" : ""
+          }
+        }
+      },
+      "position" : {
+        "x" : 0,
+        "y" : 13,
+        "width" : 3,
+        "height" : 8
+      }
+    }, {
+      "widget" : {
+        "name" : "fa42902a",
+        "queries" : [ {
+          "name" : "main_query",
+          "query" : {
+            "datasetName" : "bfee8bb8",
+            "fields" : [ {
+              "name" : "daily(date)",
+              "expression" : "DATE_TRUNC(\"DAY\", `date`)"
+            }, {
+              "name" : "avg(temperature)",
+              "expression" : "AVG(`temperature`)"
+            } ],
+            "disaggregated" : false
+          }
+        } ],
+        "spec" : {
+          "version" : 3,
+          "widgetType" : "bar",
+          "encodings" : {
+            "x" : {
+              "fieldName" : "daily(date)",
+              "scale" : {
+                "type" : "temporal"
+              },
+              "displayName" : "date"
+            },
+            "y" : {
+              "fieldName" : "avg(temperature)",
+              "scale" : {
+                "type" : "quantitative"
+              },
+              "displayName" : "Temprature (°C)"
+            },
+            "label" : {
+              "show" : true
+            }
+          }
+        }
+      },
+      "position" : {
+        "x" : 0,
+        "y" : 4,
+        "width" : 3,
+        "height" : 6
+      }
+    }, {
+      "widget" : {
+        "name" : "ce82a602",
+        "queries" : [ {
+          "name" : "main_query",
+          "query" : {
+            "datasetName" : "bfee8bb8",
+            "fields" : [ {
+              "name" : "sum(predicted_temp)",
+              "expression" : "SUM(`predicted_temp`)"
+            }, {
+              "name" : "predicted_temp",
+              "expression" : "`predicted_temp`"
+            }, {
+              "name" : "daily(date)",
+              "expression" : "DATE_TRUNC(\"DAY\", `date`)"
+            } ],
+            "disaggregated" : false
+          }
+        } ],
+        "spec" : {
+          "version" : 3,
+          "widgetType" : "heatmap",
+          "encodings" : {
+            "x" : {
+              "fieldName" : "predicted_temp",
+              "scale" : {
+                "type" : "quantitative"
+              },
+              "displayName" : "Temprature (°C)"
+            },
+            "y" : {
+              "fieldName" : "daily(date)",
+              "scale" : {
+                "type" : "categorical"
+              },
+              "displayName" : "date"
+            },
+            "color" : {
+              "fieldName" : "sum(predicted_temp)",
+              "scale" : {
+                "type" : "quantitative",
+                "colorRamp" : {
+                  "mode" : "scheme",
+                  "scheme" : "orangered"
+                }
+              },
+              "displayName" : "Sum of predicted_temp"
+            },
+            "label" : {
+              "show" : false
+            }
+          }
+        }
+      },
+      "position" : {
+        "x" : 3,
+        "y" : 4,
+        "width" : 3,
+        "height" : 6
+      }
+    }, {
+      "widget" : {
+        "name" : "b1f84053",
+        "textbox_spec" : "# ClimaGuard: Real-Time Climate Resilience Dashboard for Singapore"
+      },
+      "position" : {
+        "x" : 0,
+        "y" : 0,
+        "width" : 6,
+        "height" : 2
+      }
+    }, {
+      "widget" : {
+        "name" : "8ffe673c",
+        "textbox_spec" : "## Wind Speed (knots) bvs Humidity (%)\n\nAbout  Humidity:Relative humidity, commonly knows just as humidity, is the amount of moisture in the air compared with what the air can hold. The air can hold more moisture at higher temprature. A relative temprature near 100 % means there may be dew or fog\n\nAbout  wind speed: The Wind speed is calculated using the average over a shot period of time. Gusts are shot bursts of wind above this average. A gust typically last under 20 sec"
+      },
+      "position" : {
+        "x" : 0,
+        "y" : 10,
+        "width" : 3,
+        "height" : 3
+      }
+    }, {
+      "widget" : {
+        "name" : "8ba2854d",
+        "textbox_spec" : "## What Each Weather Reading Tells Us\nTemperature Measures how hot or cold the air is at a specific location.\n Rainfall: Shows the amount of rain that fell in a location, measured in millimeters.\nHumidity: Indicates how much moisture is in the air compared to its capacity.\nWind Direction: Tells us about the direction from which the wind is blowing\nWind Speed: Measures how fast the wind is moving over a short time period.\n"
+      },
+      "position" : {
+        "x" : 3,
+        "y" : 10,
+        "width" : 3,
+        "height" : 3
+      }
+    }, {
+      "widget" : {
+        "name" : "b60747d6",
+        "textbox_spec" : "## Daily Trending Temperature (in Celsius for past 10 Days)\nThe average air temperature (in degrees Celsius) recorded across various locations in Singapore over the past 10 days"
+      },
+      "position" : {
+        "x" : 0,
+        "y" : 2,
+        "width" : 3,
+        "height" : 2
+      }
+    }, {
+      "widget" : {
+        "name" : "d5318b76",
+        "textbox_spec" : "## Heat Risk Map\nThis heat map highlights areas across Singapore experiencing elevated heat risk based on recent temperature and humidity data. \nGlobally, heatwaves are among the deadliest natural hazards, causing over 500,000 deaths between 2000 and 2019, according to the WHO. In urban areas like Singapore, the Urban Heat Island effect can make local heat risk even more severe."
+      },
+      "position" : {
+        "x" : 3,
+        "y" : 2,
+        "width" : 3,
+        "height" : 2
+      }
+    }, {
+      "widget" : {
+        "name" : "07843dd6",
+        "textbox_spec" : "## Top 5 Hottest Locations in Singapore (Last 10 Days Average Temperature)\nTracking the top 5 locations with the highest average temperature over the past 10 days helps identify urban heat hotspots within Singapore. These areas may experience stronger heat stress, which can impact health, energy demand, and infrastructure. Monitoring temperature trends at the city or district level is essential for planning cooling strategies, such as green spaces, shaded areas, or heat warnings. It also supports climate resilience efforts by showing which neighborhoods are most vulnerable to extreme heat. Knowing where temperatures are consistently higher helps government agencies and communities take targeted actions to protect lives and improve urban comfort."
+      },
+      "position" : {
+        "x" : 0,
+        "y" : 21,
+        "width" : 6,
+        "height" : 2
+      }
+    } ],
+    "pageType" : "PAGE_TYPE_CANVAS"
+  } ]
+}
