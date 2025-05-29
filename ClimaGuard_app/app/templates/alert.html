@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Alert Settings</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://kit.fontawesome.com/a2e0a4f1a7.js" crossorigin="anonymous"></script>
+  <head>
+  <meta charset="UTF-8">
+  <title>Weather Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+            body.dark-mode .card {
+          color: var(--text-dark);
+        }
+
+        /* Sun & Moon row text override */
+        body.dark-mode .card .row div {
+          color: var(--text-dark);
+        }
+
+        /* Table header fix */
+        body.dark-mode thead {
+          background-color: #343a40 !important;
+          color: var(--text-dark);
+        }
+    :root {
+      --bg-light: #f7f8fc;
+      --bg-dark: #212529;
+      --text-light: #212529;
+      --text-dark: #f8f9fa;
+      --sidebar-bg: #343a40;
+      --sidebar-hover: #495057;
+      --card-bg-light: #fff;
+      --card-bg-dark: #2c3034;
+    }
+
+    body.light-mode {
+      background-color: var(--bg-light);
+      color: var(--text-light);
+    }
+    body.dark-mode {
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    .sidebar {
+      background-color: var(--sidebar-bg);
+      color: var(--text-dark);
+      height: 100vh;
+      padding: 20px;
+      min-width: 220px;
+    }
+
+    .sidebar h4 {
+      color: var(--text-dark);
+    }
+
+    .sidebar-btn {
+      color: var(--text-dark);
+      background: transparent;
+      text-align: left;
+      border: none;
+      border-radius: 6px;
+      padding: 10px;
+      transition: background 0.2s;
+      width: 100%;
+    }
+
+    .sidebar-btn:hover {
+      background-color: var(--sidebar-hover);
+    }
+
+    .card-shadow {
+      background-color: var(--card-bg-light);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      transition: background-color 0.3s;
+    }
+
+    body.dark-mode .card-shadow {
+      background-color: var(--card-bg-dark);
+    }
+
+    .tooltip-th {
+      cursor: help;
+      border-bottom: 1px dotted #999;
+    }
+  </style>
+</head>
+<body>
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <script>
+      alert("{{ messages[0] }}");
+    </script>
+  {% endif %}
+{% endwith %}
+
+<div class="d-flex">
+  <!-- Sidebar -->
+  <div class="sidebar d-flex flex-column">
+    <h4 class="mb-4">ClimaGuard</h4>
+    <a href="/" class="btn sidebar-btn mb-2">
+      <i class="bi bi-speedometer2 me-2"></i> Dashboard
+    </a>
+    <a href="/alert" class="btn sidebar-btn mb-2">
+      <i class="bi bi-exclamation-triangle me-2"></i> Alert Settings
+    </a>
+    <a href="/emergency" class="btn sidebar-btn mb-2">
+      <i class="bi bi-telephone-fill me-2"></i> Emergency Numbers
+    </a>
+    <button class="btn sidebar-btn mt-auto" onclick="toggleDarkMode()">
+      <i class="bi bi-moon-stars-fill me-2"></i> Toggle Dark Mode
+    </button>
+  </div>
+  <!-- Main Content -->
+  <div class="container mt-5">
+    <h3>Set Weather Alerts</h3>
+    <form method="POST">
+      <div class="mb-3">
+        <label for="tempThreshold" class="form-label">Heat Risk Alert (°C)</label>
+        <input type="number" class="form-control" id="tempThreshold" placeholder="e.g. 35">
+      </div>
+      <button type="submit" class="btn btn-primary">Save Alerts</button>
+    </form>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script>
+  function toggleDarkMode() {
+    const isDark = document.body.classList.contains('dark-mode');
+    document.body.classList.toggle('dark-mode', !isDark);
+    document.body.classList.toggle('light-mode', isDark);
+    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    renderChart(); // re-render chart on theme toggle
+  }
+
+  // Theme preference
+  document.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('theme') || 'light';
+    document.body.classList.add(saved + '-mode');
+    renderChart();
+  });
+
+</script>
+</body>
+</html>

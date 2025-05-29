@@ -73,14 +73,14 @@
                   "scheme" : "orangered"
                 }
               },
-              "displayName" : "avg_temp"
+              "displayName" : "Forcasted Risk Meter"
             },
             "size" : {
               "fieldName" : "avg_temp",
               "scale" : {
                 "type" : "quantitative"
               },
-              "displayName" : "Temprature ( °C)"
+              "displayName" : "Risk Meter"
             },
             "extra" : [ {
               "fieldName" : "location",
@@ -91,7 +91,7 @@
       },
       "position" : {
         "x" : 0,
-        "y" : 23,
+        "y" : 4,
         "width" : 6,
         "height" : 9
       }
@@ -415,7 +415,7 @@
       },
       "position" : {
         "x" : 3,
-        "y" : 13,
+        "y" : 24,
         "width" : 3,
         "height" : 8
       }
@@ -476,7 +476,7 @@
       },
       "position" : {
         "x" : 0,
-        "y" : 13,
+        "y" : 24,
         "width" : 3,
         "height" : 8
       }
@@ -523,7 +523,7 @@
       },
       "position" : {
         "x" : 0,
-        "y" : 4,
+        "y" : 15,
         "width" : 3,
         "height" : 6
       }
@@ -584,7 +584,7 @@
       },
       "position" : {
         "x" : 3,
-        "y" : 4,
+        "y" : 15,
         "width" : 3,
         "height" : 6
       }
@@ -606,7 +606,7 @@
       },
       "position" : {
         "x" : 0,
-        "y" : 10,
+        "y" : 21,
         "width" : 3,
         "height" : 3
       }
@@ -617,7 +617,7 @@
       },
       "position" : {
         "x" : 3,
-        "y" : 10,
+        "y" : 21,
         "width" : 3,
         "height" : 3
       }
@@ -628,7 +628,7 @@
       },
       "position" : {
         "x" : 0,
-        "y" : 2,
+        "y" : 13,
         "width" : 3,
         "height" : 2
       }
@@ -639,7 +639,7 @@
       },
       "position" : {
         "x" : 3,
-        "y" : 2,
+        "y" : 13,
         "width" : 3,
         "height" : 2
       }
@@ -650,7 +650,7 @@
       },
       "position" : {
         "x" : 0,
-        "y" : 21,
+        "y" : 2,
         "width" : 6,
         "height" : 2
       }
